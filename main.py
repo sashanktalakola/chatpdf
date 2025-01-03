@@ -3,6 +3,8 @@ from dotenv import load_dotenv
 from langchain_openai import OpenAIEmbeddings
 from langchain_astradb import AstraDBVectorStore
 
+from preprocessing import extract_text_from_pdf, get_text_chunks
+
 load_dotenv()
 
 ASTRA_DB_APPLICATION_TOKEN = os.environ["ASTRA_DB_APPLICATION_TOKEN"]
@@ -11,7 +13,9 @@ ASTRA_DB_KEYSPACE = os.environ["ASTRA_DB_KEYSPACE"]
 OPENAI_API_KEY = os.environ["OPENAI_API_KEY"]
 
 
-embedding = OpenAIEmbeddings()
+embedding = OpenAIEmbeddings(
+    model="text-embedding-3-small"
+)
 
 vstore = AstraDBVectorStore(
     collection_name="file_embeddings",
@@ -21,11 +25,9 @@ vstore = AstraDBVectorStore(
     namespace=ASTRA_DB_KEYSPACE,
 )
 
-texts = [
-    "Specify the embeddings model, database, and collection to use. If the collection does not exist, it is created automatically.",
-    "Load a small dataset of philosophical quotes with the Python dataset module.",
-    "Process metadata and convert to LangChain documents.",
-    "Compute embeddings for each document and store in the database."
-    ]
 
-vstore.add_texts(texts)
+pdf_path = "test-files/rp.pdf"
+text = extract_text_from_pdf(pdf_path)
+text_chunks = get_text_chunks(text)
+
+vstore.add_texts(text_chunks)
