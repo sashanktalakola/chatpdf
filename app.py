@@ -4,7 +4,8 @@ from dotenv import load_dotenv
 from langchain_openai import OpenAIEmbeddings
 from langchain_astradb import AstraDBVectorStore
 
-from preprocessing import extract_text_from_pdf
+from preprocessing import extract_text_from_pdf, get_text_chunks
+from utils import rag_pipeline
 
 
 load_dotenv()
@@ -36,3 +37,12 @@ if uploaded_file is not None:
     st.write(file_data)
 
 query = st.text_input("Enter Question")
+
+if (query is not None) and (uploaded_file is not None):
+
+    text_chunks = get_text_chunks(file_data)
+    vstore.add_texts(text_chunks)
+
+    response = rag_pipeline(query, vstore)
+
+    st.write(response)
